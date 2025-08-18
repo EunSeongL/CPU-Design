@@ -32,7 +32,7 @@ module DataPath (
         .RA1        (instrCode[19:15]),
         .RA2        (instrCode[24:20]),
         .WA         (instrCode[11:7]),
-        .WD         (BE_RData),
+        .WD         (RFWDSrcMuxOut),
         .RD1        (RFData1),
         .RD2        (RFData2)
     );
@@ -46,7 +46,7 @@ module DataPath (
 
     Byte_Enable U_Byte_Enable (
         .instrCode  (instrCode),
-        .RData      (RFWDSrcMuxOut),
+        .RData      (busRData),
         .WData      (RFData2),
         .addr       (aluResult[1:0]),
         .Byte_Enable(Byte_Enable),
@@ -57,7 +57,7 @@ module DataPath (
     mux_2x1 U_RFWDSrcMuxSel (
         .sel        (RFWDSrcMuxSel),
         .x0         (aluResult),
-        .x1         (busRData),
+        .x1         (BE_RData),
         .y          (RFWDSrcMuxOut)
     );
 
@@ -206,7 +206,7 @@ module immExtend (
 endmodule
 
 module Byte_Enable (
-    input  logic [31:0] instrCode,
+    input  logic [ 2:0] funct3,
     input  logic [31:0] RData,
     input  logic [31:0] WData,
     input  logic [ 1:0] addr,
@@ -217,33 +217,33 @@ module Byte_Enable (
 
     always_comb begin
         BE_RData = 32'h0;
-        case (instrCode[14:12]) 
+        case (funct3) 
             3'b000: begin
                 case (addr)
-                    2'b00: BE_RData = {{24{BE_RData[7]}},  BE_RData[ 7:0]};
-                    2'b01: BE_RData = {{24{BE_RData[15]}}, BE_RData[15:8]};
-                    2'b10: BE_RData = {{24{BE_RData[23]}}, BE_RData[23:16]};
-                    2'b11: BE_RData = {{24{BE_RData[31]}}, BE_RData[31:24]}; 
+                    2'b00: BE_RData = {{24{RData[7]}},  RData[ 7:0]};
+                    2'b01: BE_RData = {{24{RData[15]}}, RData[15:8]};
+                    2'b10: BE_RData = {{24{RData[23]}}, RData[23:16]};
+                    2'b11: BE_RData = {{24{RData[31]}}, RData[31:24]}; 
                 endcase
             end
             3'b100: begin
                 case (addr)
-                    2'b00: BE_RData = {24'b0, BE_RData[7:0]};
-                    2'b01: BE_RData = {24'b0, BE_RData[15:8]};
-                    2'b10: BE_RData = {24'b0, BE_RData[23:16]};
-                    2'b11: BE_RData = {24'b0, BE_RData[31:24]};
+                    2'b00: BE_RData = {24'b0, RData[7:0]};
+                    2'b01: BE_RData = {24'b0, RData[15:8]};
+                    2'b10: BE_RData = {24'b0, RData[23:16]};
+                    2'b11: BE_RData = {24'b0, RData[31:24]};
                 endcase
             end
             3'b001: begin
                 case (addr)
-                    2'b00: BE_RData = {{16{BE_RData[15]}}, BE_RData[15:0]};
-                    2'b10: BE_RData = {{16{BE_RData[31]}}, BE_RData[31:16]};
+                    2'b00: BE_RData = {{16{RData[15]}}, RData[15:0]};
+                    2'b10: BE_RData = {{16{RData[31]}}, RData[31:16]};
                 endcase
             end
             3'b101: begin
                 case (addr)
-                    2'b00: BE_RData = {16'b0, BE_RData[15:0]};
-                    2'b10: BE_RData = {16'b0, BE_RData[31:16]};
+                    2'b00: BE_RData = {16'b0, RData[15:0]};
+                    2'b10: BE_RData = {16'b0, RData[31:16]};
                 endcase
             end
             3'b010: BE_RData = RData;
@@ -253,7 +253,7 @@ module Byte_Enable (
     always_comb begin
         Byte_Enable = 4'b0000;
         BE_WData = 32'h0;
-        case (instrCode[14:12])
+        case (funct3)
             3'b000: begin
                 case (addr)
                     2'b00: begin
@@ -262,15 +262,15 @@ module Byte_Enable (
                     end
                     2'b01: begin
                         Byte_Enable = 4'b0010;
-                        BE_WData = {24'b0, WData[15:8]};
+                        BE_WData = {16'b0, WData[7:0], 8'b0};
                     end
                     2'b10: begin
                         Byte_Enable = 4'b0100;
-                        BE_WData = {24'b0, WData[23:16]};
+                        BE_WData = {8'b0, WData[7:0], 16'b0};
                     end
                     2'b11: begin
                         Byte_Enable = 4'b1000;
-                        BE_WData = {24'b0, WData[31:24]};
+                        BE_WData = {WData[7:0], 24'b0};
                     end
                 endcase
             end
@@ -280,7 +280,7 @@ module Byte_Enable (
                     BE_WData = {16'b0, WData[15:0]};
                 end else if (addr == 2'b10) begin
                     Byte_Enable = 4'b1100;
-                    BE_WData = {16'b0, WData[31:16]};
+                    BE_WData = {WData[15:0], 16'b0};
                 end
             end
             3'b010: begin
