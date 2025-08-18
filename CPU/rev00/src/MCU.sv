@@ -11,6 +11,7 @@ module MCU(
     logic [31:0] busAddr;
     logic [31:0] busRData;
     logic [31:0] busWData;
+    logic [ 3:0] Byte_Enable;
 
     ROM U_ROM(
         .addr   (instrMemAddr),
@@ -20,11 +21,12 @@ module MCU(
     CPU_RV32I U_CPU_RV32I (.*);
 
     RAM U_RAM (
-        .clk    (clk),
-        .we     (busWe),
-        .addr   (busAddr),
-        .wData  (busWData),
-        .rData  (busRData)
+        .clk         (clk),
+        .we          (busWe),
+        .addr        (busAddr),
+        .wData       (busWData),
+        .rData       (busRData),
+        .Byte_Enable (Byte_Enable)
     );
     
 endmodule

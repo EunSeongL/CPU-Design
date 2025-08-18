@@ -8,7 +8,8 @@ module CPU_RV32I (
     output logic        busWe,
     output logic [31:0] busAddr,
     output logic [31:0] busRData,
-    output logic [31:0] busWData
+    output logic [31:0] busWData,
+    output logic [ 3:0] Byte_Enable
 );
 
     logic       regFileWe;
