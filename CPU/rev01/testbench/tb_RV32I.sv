@@ -39,7 +39,7 @@ module tb_RV32I();
     logic [31:0] cycle;
     logic done;
     logic [31:0]  current_test_id = 0;
-    logic [127:0] current_test_type;
+    logic [255:0] current_test_type;
     logic [31:0]  current_output;
     logic [31:0]  current_result;
     logic all_tests_passed = 0;
@@ -63,7 +63,7 @@ module tb_RV32I();
             cycle <= 0;
     end
 
-    task check_result_RF (input logic [4:0] addr, input [31:0] expect_value, input [127:0] test_type);
+    task check_result_RF (input logic [4:0] addr, input [31:0] expect_value, input [255:0] test_type);
         done = 0;
         current_test_id   = current_test_id + 1;
         current_test_type = test_type;
@@ -77,7 +77,7 @@ module tb_RV32I();
         $display("[%d] Test %s passed!", current_test_id, test_type);
     endtask
 
-    task check_result_DMEM (input logic [14:0] addr, input [31:0] expect_value, input [127:0] test_type);
+    task check_result_DMEM (input logic [14:0] addr, input [31:0] expect_value, input [255:0] test_type);
         done = 0;
         current_test_id   = current_test_id + 1;
         current_test_type = test_type;
@@ -98,6 +98,17 @@ module tb_RV32I();
     logic [31:0] RD0, RD1, RD2, RD3, RD4, RD5;
     logic [14:0] DATA_ADDR, DATA_ADDR0, DATA_ADDR1, DATA_ADDR2, DATA_ADDR3;
     logic [14:0] DATA_ADDR4, DATA_ADDR5, DATA_ADDR6, DATA_ADDR7, DATA_ADDR8, DATA_ADDR9;
+
+    logic [31:0] JUMP_ADDR;
+
+    logic [31:0]  BR_TAKEN_OP1  [6:0];
+    logic [31:0]  BR_TAKEN_OP2  [6:0];
+    logic [31:0]  BR_NTAKEN_OP1 [6:0];
+    logic [31:0]  BR_NTAKEN_OP2 [6:0];
+    logic [2:0]   BR_TYPE       [6:0];
+    logic [255:0] BR_NAME_TK1   [6:0];
+    logic [255:0] BR_NAME_TK2   [6:0];
+    logic [255:0] BR_NAME_NTK   [6:0];
 
     initial begin
         clk = 0;
@@ -136,47 +147,51 @@ module tb_RV32I();
 
             reset_cpu();
 
-            #10; check_result_RF(8,  32'h8000_0000, "R-Type ADD");
-            #10; check_result_RF(9,  32'h8000_0002, "R-Type SUB");
-            #10; check_result_RF(10, 32'h8000_0000, "R-Type AND");
-            #10; check_result_RF(11, 32'hFFFF_FFFF, "R-Type OR");
-            #10; check_result_RF(12, 32'h8000_0000, "R-Type SLL");
-            #10; check_result_RF(13, 32'h0000_0001, "R-Type SRL");
-            #10; check_result_RF(14, 32'hFFFF_FFFF, "R-Type SRA");
-            #10; check_result_RF(15, 32'h0000_0001, "R-Type SLT");
-            #10; check_result_RF(16, 32'h0000_0000, "R-Type SLTU");
-            #10; check_result_RF(17, 32'h7FFF_FFFF, "R-Type XOR");
+            check_result_RF(8,  32'h8000_0000, "R-Type ADD");
+            check_result_RF(9,  32'h8000_0002, "R-Type SUB");
+            check_result_RF(10, 32'h8000_0000, "R-Type AND");
+            check_result_RF(11, 32'hFFFF_FFFF, "R-Type OR");
+            check_result_RF(12, 32'h8000_0000, "R-Type SLL");
+            check_result_RF(13, 32'h0000_0001, "R-Type SRL");
+            check_result_RF(14, 32'hFFFF_FFFF, "R-Type SRA");
+            check_result_RF(15, 32'h0000_0001, "R-Type SLT");
+            check_result_RF(16, 32'h0000_0000, "R-Type SLTU");
+            check_result_RF(17, 32'h7FFF_FFFF, "R-Type XOR");
         end
 
         // S-Type
-        if (0) begin
+        if (1) begin
             init();
             
-            IMM0 = 32'h0000_0100;
-            IMM1 = 32'h0000_0101;
-            IMM2 = 32'h0000_0102;
-            IMM3 = 32'h0000_0103;
+            IMM0 = 32'h0000_0000;
+            IMM1 = 32'h0000_0001;
+            IMM2 = 32'h0000_0002;
+            IMM3 = 32'h0000_0003;
+
+            `RF_PATH.mem[ 1] = 32'h1234_5678;
+            `RF_PATH.mem[ 2] = 32'h0000_0000;
+            `RF_PATH.mem[ 3] = 32'h0000_0004;
+            `RF_PATH.mem[ 4] = 32'h0000_0008;
+            `RF_PATH.mem[ 5] = 32'h0000_000C;
+            `RF_PATH.mem[ 6] = 32'h0000_0010;
+            `RF_PATH.mem[ 7] = 32'h0000_0014;
+            `RF_PATH.mem[ 8] = 32'h0000_0018;
+            `RF_PATH.mem[ 9] = 32'h0000_001C;
+            `RF_PATH.mem[10] = 32'h0000_0020;
 
             DATA_ADDR0 = (`RF_PATH.mem[ 2] + IMM0[11:0]) >> 2;
+
             DATA_ADDR1 = (`RF_PATH.mem[ 3] + IMM0[11:0]) >> 2;
             DATA_ADDR2 = (`RF_PATH.mem[ 4] + IMM1[11:0]) >> 2;
             DATA_ADDR3 = (`RF_PATH.mem[ 5] + IMM2[11:0]) >> 2;
             DATA_ADDR4 = (`RF_PATH.mem[ 6] + IMM3[11:0]) >> 2;
+
             DATA_ADDR5 = (`RF_PATH.mem[ 7] + IMM0[11:0]) >> 2;
             DATA_ADDR6 = (`RF_PATH.mem[ 8] + IMM1[11:0]) >> 2;
             DATA_ADDR7 = (`RF_PATH.mem[ 9] + IMM2[11:0]) >> 2;
             DATA_ADDR8 = (`RF_PATH.mem[10] + IMM3[11:0]) >> 2;
 
-            `RF_PATH.mem[ 1] = 32'h1234_5678;
-            `RF_PATH.mem[ 2] = 32'h8765_4321;
-            `RF_PATH.mem[ 3] = 32'h3000_0020;
-            `RF_PATH.mem[ 4] = 32'h3000_0030;
-            `RF_PATH.mem[ 5] = 32'h3000_0040;
-            `RF_PATH.mem[ 6] = 32'h3000_0050;
-            `RF_PATH.mem[ 7] = 32'h0000_0000;
-            `RF_PATH.mem[ 8] = 32'h0000_0000;
-            `RF_PATH.mem[ 9] = 32'h0000_0000;
-            `RF_PATH.mem[10] = 32'h0000_0000;
+            
 
             `INSTR_PATH.rom[0] = {IMM0[11:5], 5'd1, 5'd2,  `FNC_SW, IMM0[4:0], `OPC_STORE};
 
@@ -217,12 +232,11 @@ module tb_RV32I();
         if (1) begin
             init();
 
-            `RF_PATH.mem[1] = 32'h3000_0100;
+            `RF_PATH.mem[1] = 32'h0000_0000;
             IMM0            = 32'h0000_0000;
             IMM1            = 32'h0000_0001;
             IMM2            = 32'h0000_0002;
             IMM3            = 32'h0000_0003;
-            INST_ADDR       = 14'h0000;
             DATA_ADDR       = (`RF_PATH.mem[1] + IMM0[11:0]) >> 2;
 
             `INSTR_PATH.rom[ 0] = {IMM0[11:0], 5'd1, `FNC_LW,  5'd2,  `OPC_LOAD};
@@ -271,7 +285,7 @@ module tb_RV32I();
         end
         
         // I-Type 
-        if (0) begin
+        if (1) begin
             init();
             
             IMM12_0 = 12'b0000000001;
@@ -304,6 +318,104 @@ module tb_RV32I();
             #10; check_result_RF(11, 32'h0000_0808, "I-Type SRAI");
             
         end
+
+        if (1) begin
+        // Test B-Type Insts --------------------------------------------------
+        // - BEQ, BNE, BLT, BGE, BLTU, BGEU
+
+        IMM       = 32'h0000_0008;
+        JUMP_ADDR = IMM >> 2;
+
+        BR_TYPE[0]     = `FNC_BEQ;
+        BR_NAME_TK1[0] = "B-Type BEQ Taken 1";
+        BR_NAME_TK2[0] = "B-Type BEQ Taken 2";
+        BR_NAME_NTK[0] = "B-Type BEQ Not Taken";
+
+        BR_TAKEN_OP1[0]  = 100; BR_TAKEN_OP2[0]  = 100;
+        BR_NTAKEN_OP1[0] = 100; BR_NTAKEN_OP2[0] = 200;
+
+        BR_TYPE[1]       = `FNC_BNE;
+        BR_NAME_TK1[1]   = "B-Type BNE Taken 1";
+        BR_NAME_TK2[1]   = "B-Type BNE Taken 2";
+        BR_NAME_NTK[1]   = "B-Type BNE Not Taken";
+        BR_TAKEN_OP1[1]  = 100; BR_TAKEN_OP2[1]  = 200;
+        BR_NTAKEN_OP1[1] = 100; BR_NTAKEN_OP2[1] = 100;
+
+        BR_TYPE[2]       = `FNC_BLT;
+        BR_NAME_TK1[2]   = "B-Type BLT Taken 1";
+        BR_NAME_TK2[2]   = "B-Type BLT Taken 2";
+        BR_NAME_NTK[2]   = "B-Type BLT Not Taken";
+        BR_TAKEN_OP1[2]  = 100; BR_TAKEN_OP2[2]  = 200;
+        BR_NTAKEN_OP1[2] = 200; BR_NTAKEN_OP2[2] = 100;
+
+        BR_TYPE[3]       = `FNC_BGE;
+        BR_NAME_TK1[3]   = "B-Type BGE Taken 1";
+        BR_NAME_TK2[3]   = "B-Type BGE Taken 2";
+        BR_NAME_NTK[3]   = "B-Type BGE Not Taken";
+        BR_TAKEN_OP1[3]  = 300; BR_TAKEN_OP2[3]  = 200;
+        BR_NTAKEN_OP1[3] = 100; BR_NTAKEN_OP2[3] = 200;
+
+        BR_TYPE[4]       = `FNC_BLTU;
+        BR_NAME_TK1[4]   = "B-Type BLTU Taken 1";
+        BR_NAME_TK2[4]   = "B-Type BLTU Taken 2";
+        BR_NAME_NTK[4]   = "B-Type BLTU Not Taken";
+        BR_TAKEN_OP1[4]  = 32'h0000_0001; BR_TAKEN_OP2[4]  = 32'hFFFF_0000;
+        BR_NTAKEN_OP1[4] = 32'hFFFF_0000; BR_NTAKEN_OP2[4] = 32'h0000_0001;
+
+        BR_TYPE[5]       = `FNC_BGEU;
+        BR_NAME_TK1[5]   = "B-Type BGEU Taken 1";
+        BR_NAME_TK2[5]   = "B-Type BGEU Taken 2";
+        BR_NAME_NTK[5]   = "B-Type BGEU Not Taken";
+        BR_TAKEN_OP1[5]  = 32'hFFFF_0000; BR_TAKEN_OP2[5]  = 32'h0000_0001;
+        BR_NTAKEN_OP1[5] = 32'h0000_0001; BR_NTAKEN_OP2[5] = 32'hFFFF_0000;
+
+        for (int i = 0; i < 6; i = i + 1) begin
+            init();
+  
+            `RF_PATH.mem[1] = BR_TAKEN_OP1[i];
+            `RF_PATH.mem[2] = BR_TAKEN_OP2[i];
+            `RF_PATH.mem[3] = 300;
+            `RF_PATH.mem[4] = 400;
+  
+            `INSTR_PATH.rom[0]   = {IMM[12], IMM[10:5], 5'd2, 5'd1, BR_TYPE[i], IMM[4:1], IMM[11], `OPC_BRANCH};
+            `INSTR_PATH.rom[1]   = {`FNC7_0, 5'd4, 5'd3, `FNC_ADD_SUB, 5'd5, `OPC_ARI_RTYPE};
+            `INSTR_PATH.rom[JUMP_ADDR[13:0]] = {`FNC7_0, 5'd4, 5'd3, `FNC_ADD_SUB, 5'd6, `OPC_ARI_RTYPE};
+  
+            reset_cpu();
+  
+            check_result_RF(5'd5, 0,   BR_NAME_TK1[i]);
+            check_result_RF(5'd6, 700, BR_NAME_TK2[i]);
+  
+            init();
+  
+            `RF_PATH.mem[1] = BR_NTAKEN_OP1[i];
+            `RF_PATH.mem[2] = BR_NTAKEN_OP2[i];
+            `RF_PATH.mem[3] = 300;
+            `RF_PATH.mem[4] = 400;
+  
+            `INSTR_PATH.rom[0] = {IMM[12], IMM[10:5], 5'd2, 5'd1, BR_TYPE[i], IMM[4:1], IMM[11], `OPC_BRANCH};
+            `INSTR_PATH.rom[1] = {`FNC7_0, 5'd4, 5'd3, `FNC_ADD_SUB, 5'd5, `OPC_ARI_RTYPE};
+ 
+            reset_cpu();
+            check_result_RF(5'd5, 700, BR_NAME_NTK[i]);
+        end
+    end
+
+    if (1) begin
+        // Test U-Type Insts --------------------------------------------------
+        // - LUI, AUIPC
+        reset();
+
+        IMM = 32'h7FFF_0123;
+
+        `IMEM_PATH.mem[0] = {IMM[31:12], 5'd3, `OPC_LUI};
+        `IMEM_PATH.mem[1] = {IMM[31:12], 5'd4, `OPC_AUIPC};
+
+        reset_cpu();
+
+        check_result_RF(3, 32'h7fff0000, "U-Type LUI");
+        check_result_RF(4, 32'h7fff0004, "U-Type AUIPC");
+    end
 
     all_passed = 1'b1;
 

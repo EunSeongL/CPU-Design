@@ -10,20 +10,20 @@ module DataPath (
     input  logic        regFileWe,
     input  logic [ 3:0] aluControl,
     input  logic        aluSrcMuxSel,
-    input  logic        RFWDSrcMuxSel,
+    input  logic [ 1:0] RFWDSrcMuxSel,
     output logic [31:0] busAddr,
     output logic [31:0] busWData,
     input  logic [31:0] busRData,
     output logic [ 3:0] Byte_Enable,
-    input  logic        branch
+    input  logic        branch,
+    input  logic        RD1MuxSel
 );
 
     logic [31:0] aluResult, RFData1, RFData2;
     logic [31:0] PCSrcData, PCOutData;
     logic [31:0] immExt, aluSrcMuxOut;
     logic [31:0] RFWDSrcMuxOut, BE_RData, BE_WData;
-    logic [31:0] PC_4_AdderResult, PC_Imm_AdderResult, PCSrcMuxOut;
-
+    logic [31:0] PC_4_AdderResult, PC_Imm_AdderResult, PCSrcMuxOut, RD1MuxOut;
     logic        btaken, PCSrcMuxSel;
 
     assign instrMemAddr = PCOutData;
@@ -42,6 +42,13 @@ module DataPath (
         .RD2        (RFData2)
     );
 
+    mux_2x1 U_RD1SrcMux (
+        .sel(RD1MuxSel),
+        .x0 (RFData1),
+        .x1 (32'h0),
+        .y  (RD1MuxOut)
+    );
+
     mux_2x1 U_AluSrcMuxSel (
         .sel        (aluSrcMuxSel),
         .x0         (RFData2),
@@ -50,7 +57,7 @@ module DataPath (
     );
 
     Byte_Enable U_Byte_Enable (
-        .instrCode  (instrCode),
+        .funct3     (instrCode[14:12]),
         .RData      (busRData),
         .WData      (RFData2),
         .addr       (aluResult[1:0]),
@@ -59,19 +66,21 @@ module DataPath (
         .BE_WData   (BE_WData)
     );
 
-    mux_2x1 U_RFWDSrcMuxSel (
-        .sel        (RFWDSrcMuxSel),
-        .x0         (aluResult),
-        .x1         (BE_RData),
-        .y          (RFWDSrcMuxOut)
+    mux_4x1 U_RFWDSrcMux (
+        .sel(RFWDSrcMuxSel),
+        .x0 (aluResult),
+        .x1 (busRData),
+        .x2 (PC_Imm_AdderResult),
+        .x3 (PC_4_AdderResult),
+        .y  (RFWDSrcMuxOut)
     );
 
     alu U_ALU (
-        .aluControl(aluControl),
-        .a         (RFData1),
-        .b         (aluSrcMuxOut),
-        .result    (aluResult),
-        .btaken    (btaken)
+        .aluControl (aluControl),
+        .a          (RD1MuxOut),
+        .b          (aluSrcMuxOut),
+        .result     (aluResult),
+        .btaken     (btaken)
     );
 
     immExtend U_immExtend (
@@ -90,7 +99,7 @@ module DataPath (
         .b(PCOutData),
         .y(PC_4_AdderResult)
     );
-
+    
     mux_2x1 U_PCSrcMux (
         .sel(PCSrcMuxSel),
         .x0 (PC_4_AdderResult),
@@ -99,13 +108,12 @@ module DataPath (
     );
 
     register U_PC (
-        .clk        (clk),
-        .reset      (reset),
-        .en         (1'b1),
-        .d          (PCSrcData),
-        .q          (PCOutData)
+        .clk  (clk),
+        .reset(reset),
+        .en   (1'b1),
+        .d    (PCSrcMuxOut),
+        .q    (PCOutData)
     );
-
 
 endmodule
 
@@ -206,10 +214,30 @@ module mux_2x1 (
     end
 endmodule
 
+module mux_4x1 (
+    input  logic [ 1:0] sel,
+    input  logic [31:0] x0,
+    input  logic [31:0] x1,
+    input  logic [31:0] x2,
+    input  logic [31:0] x3,
+    output logic [31:0] y
+);
+    always_comb begin
+        y = 32'bx;
+        case (sel)
+            2'b00: y = x0;
+            2'b01: y = x1;
+            2'b10: y = x2;
+            2'b11: y = x3;
+        endcase
+    end
+endmodule
+
 module immExtend (
     input  logic [31:0] instrCode,
     output logic [31:0] immExt
 );
+
     wire [6:0] opcode = instrCode[6:0];
     wire [2:0] funct3 = instrCode[14:12];
 
@@ -221,15 +249,18 @@ module immExtend (
             `OP_TYPE_S: immExt = {{20{instrCode[31]}}, instrCode[31:25], instrCode[11:7]};
             `OP_TYPE_I: begin
                 case (funct3)
-                    3'b001 : immExt = {27'b0, instrCode[24:20]}; // SLLI
-                    3'b011 : immExt = {20'b0, instrCode[31:20]}; // SRLI,SRAI
-                    3'b101 : immExt = {27'b0, instrCode[24:20]}; // SLTIU
-                    default: immExt = {{20{instrCode[31]}}, instrCode[31:20]};
+                    3'b001: immExt = {27'b0, instrCode[24:20]};
+                    3'b011: immExt = {20'b0, instrCode[31:20]};
+                    3'b101: immExt = {27'b0, instrCode[24:20]};
+                    default:immExt = {{20{instrCode[31]}}, instrCode[31:20]};
                 endcase
                 end
-            `OP_TYPE_B: immExt = {{20{instrCode[31]}}, instrCode[7], instrCode[30:25], instrCode[11:8], 1'b0}; 
+            `OP_TYPE_B: immExt = {{20{instrCode[31]}}, instrCode[7], instrCode[30:25], instrCode[11:8], 1'b0};
+            `OP_TYPE_LU: immExt = {{12{instrCode[31]}}, instrCode[31:12]} << 12;
+            `OP_TYPE_AU: immExt = {{12{instrCode[31]}}, instrCode[31:12]} << 12;  
         endcase
     end
+    
 endmodule
 
 module Byte_Enable (
