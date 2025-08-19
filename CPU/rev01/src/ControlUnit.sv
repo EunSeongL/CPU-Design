@@ -8,7 +8,8 @@ module ControlUnit (
     output logic [ 3:0] aluControl,
     output logic        aluSrcMuxSel,
     output logic        RFWDSrcMuxSel,
-    output logic        busWe
+    output logic        busWe,
+    output logic        branch
 );
     wire [6:0] opcode   = instrCode[6:0];
     wire [3:0] operator = {instrCode[30], instrCode[14:12]};
@@ -30,14 +31,17 @@ module ControlUnit (
         aluControl = 4'bx;
         case (opcode)
             `OP_TYPE_R: aluControl = operator;
-            `OP_TYPE_L: aluControl = `ADD;             
-            `OP_TYPE_I: begin 
-                if      (operator == `SLL) aluControl = `SLL;
-                else if (operator == `SRL) aluControl = `SRL;
-                else if (operator == `SRA) aluControl = `SRA;
-                else aluControl = {1'b0, operator[2:0]}; 
-            end
             `OP_TYPE_S: aluControl = `ADD;
+            `OP_TYPE_L: aluControl = `ADD;
+            `OP_TYPE_I: begin
+                if(operator == 4'b1101)begin
+                    aluControl = operator;
+                end
+                else begin
+                    aluControl = {1'b0, operator[2:0]};
+                end
+            end
+            `OP_TYPE_B: aluControl = operator;
         endcase
     end
 
