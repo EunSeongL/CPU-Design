@@ -1,1 +1,1 @@
-## RISC-V RV32I R, I, S, L, B Type
+## RISC-V RV32I ALL Type
