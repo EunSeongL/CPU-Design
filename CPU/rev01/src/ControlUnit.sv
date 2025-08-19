@@ -10,24 +10,27 @@ module ControlUnit (
     output logic [ 1:0] RFWDSrcMuxSel,
     output logic        busWe,
     output logic        branch,
-    output logic        RD1MuxSel
+    output logic        RD1MuxSel,
+    output logic        Jump
 );
     wire [6:0] opcode   = instrCode[6:0];
     wire [3:0] operator = {instrCode[30], instrCode[14:12]};
-    logic[5:0] signals;
+    logic[7:0] signals;
 
-    assign {regFileWe, aluSrcMuxSel, busWe, RFWDSrcMuxSel, RD1MuxSel ,branch} = signals;
+    assign {regFileWe, aluSrcMuxSel, busWe, RFWDSrcMuxSel, RD1MuxSel, branch, Jump} = signals;
 
     always_comb begin
-        signals = 6'b0_0_0_0_0_0;
+        signals = 8'b0_0_0_00_0_0_0;
         case (opcode)
-            `OP_TYPE_R:  signals = 6'b1_0_0_00_0_0;
-            `OP_TYPE_L:  signals = 6'b1_1_0_01_0_0;
-            `OP_TYPE_I:  signals = 6'b1_1_0_00_0_0;
-            `OP_TYPE_S:  signals = 6'b0_1_1_00_0_0;
-            `OP_TYPE_B:  signals = 6'b0_0_0_00_0_1;
-            `OP_TYPE_LU: signals = 6'b1_1_0_10_1_0;
-            `OP_TYPE_AU: signals = 6'b1_1_0_11_0_0;
+            `OP_TYPE_R   : signals = 8'b1_0_0_00_0_0_0;
+            `OP_TYPE_L   : signals = 8'b1_1_0_01_0_0_0;
+            `OP_TYPE_I   : signals = 8'b1_1_0_00_0_0_0;
+            `OP_TYPE_S   : signals = 8'b0_1_1_00_0_0_0;
+            `OP_TYPE_B   : signals = 8'b0_0_0_00_0_1_0;
+            `OP_TYPE_LU  : signals = 8'b1_1_0_00_1_0_0;
+            `OP_TYPE_AU  : signals = 8'b1_0_0_10_0_0_0;
+            `OP_TYPE_JAL : signals = 8'b1_0_0_11_0_0_1;
+            `OP_TYPE_JALR: signals = 8'b1_1_0_11_0_0_0;
         endcase
     end
 
@@ -48,6 +51,8 @@ module ControlUnit (
             `OP_TYPE_B:  aluControl = operator;
             `OP_TYPE_LU: aluControl = `ADD;
             `OP_TYPE_AU: aluControl = `ADD;
+            `OP_TYPE_JAL: aluControl = `ADD;
+            `OP_TYPE_JALR:aluControl = `ADD;
         endcase
     end
 

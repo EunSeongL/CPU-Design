@@ -402,19 +402,67 @@ module tb_RV32I();
     end
 
     if (1) begin
-        // Test U-Type Insts --------------------------------------------------
-        // - LUI, AUIPC
-        reset();
+    // Test U-Type Insts --------------------------------------------------
+    // - LUI, AUIPC
+        init();
 
         IMM = 32'h7FFF_0123;
 
-        `IMEM_PATH.mem[0] = {IMM[31:12], 5'd3, `OPC_LUI};
-        `IMEM_PATH.mem[1] = {IMM[31:12], 5'd4, `OPC_AUIPC};
+        `INSTR_PATH.rom[0] = {IMM[31:12], 5'd3, `OPC_LUI};
+        `INSTR_PATH.rom[1] = {IMM[31:12], 5'd4, `OPC_AUIPC};
 
         reset_cpu();
 
         check_result_RF(3, 32'h7fff0000, "U-Type LUI");
         check_result_RF(4, 32'h7fff0004, "U-Type AUIPC");
+    end
+
+    if (1) begin
+    // Test J-Type Insts --------------------------------------------------
+    // - JAL
+    
+        init();
+
+        `RF_PATH.mem[1] = 100;
+        `RF_PATH.mem[2] = 200;
+        `RF_PATH.mem[3] = 300;
+        `RF_PATH.mem[4] = 400;
+
+        IMM       = 32'h0000_0010;
+        JUMP_ADDR = {IMM[20:1], 1'b0} >> 2;
+
+        `INSTR_PATH.rom[0]   = {IMM[20], IMM[10:1], IMM[11], IMM[19:12], 5'd5, `OPC_JAL};
+        `INSTR_PATH.rom[1]   = {`FNC7_0, 5'd2, 5'd1, `FNC_ADD_SUB, 5'd6, `OPC_ARI_RTYPE};
+        `INSTR_PATH.rom[JUMP_ADDR[13:0]] = {`FNC7_0, 5'd4, 5'd3, `FNC_ADD_SUB, 5'd7, `OPC_ARI_RTYPE};
+
+        reset_cpu();
+
+        check_result_RF(5'd5, 32'h0000_0004, "J-Type JAL");
+        check_result_RF(5'd7, 700,          "J-Type JAL");
+        check_result_RF(5'd6, 0,            "J-Type JAL");
+    end
+
+    if (1) begin
+        init();
+
+        `RF_PATH.mem[1] = 32'h0000_0008;
+        `RF_PATH.mem[2] = 200;
+        `RF_PATH.mem[3] = 300;
+        `RF_PATH.mem[4] = 400;
+        `RF_PATH.mem[6] = 32'h0000_0000; // RD6 초기값 0
+
+        IMM       = 32'h0000_0010;
+        JUMP_ADDR = (`RF_PATH.mem[1] + IMM) >> 2;
+
+        `INSTR_PATH.rom[0]   = {IMM[11:0], 5'd1, 3'b000, 5'd5, `OPC_JALR};
+        `INSTR_PATH.rom[1]   = {`FNC7_0,   5'd2, 5'd1, `FNC_ADD_SUB, 5'd6, `OPC_ARI_RTYPE};
+        `INSTR_PATH.rom[JUMP_ADDR[13:0]] = {`FNC7_0,   5'd4, 5'd3, `FNC_ADD_SUB, 5'd7, `OPC_ARI_RTYPE};
+
+        reset_cpu();
+
+        check_result_RF(5'd5, 32'h0000_0004, "J-Type JALR");
+        check_result_RF(5'd7, 700,          "J-Type JALR");
+        check_result_RF(5'd6, 0,            "J-Type JALR");
     end
 
     all_passed = 1'b1;

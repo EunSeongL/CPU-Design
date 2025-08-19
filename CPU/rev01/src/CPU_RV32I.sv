@@ -18,6 +18,7 @@ module CPU_RV32I (
     logic [1:0] RFWDSrcMuxSel;
     logic       branch;
     logic       RD1MuxSel;
+    logic       Jump;
 
     ControlUnit U_ControlUnit (.*);
     DataPath U_DataPath (.*);
