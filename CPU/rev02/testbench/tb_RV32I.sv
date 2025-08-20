@@ -443,13 +443,15 @@ module tb_RV32I();
     end
 
     if (1) begin
+    // Test J-Type Insts --------------------------------------------------
+    // - JALR
         init();
 
         `RF_PATH.mem[1] = 32'h0000_0008;
         `RF_PATH.mem[2] = 200;
         `RF_PATH.mem[3] = 300;
         `RF_PATH.mem[4] = 400;
-        `RF_PATH.mem[6] = 32'h0000_0000; 
+        `RF_PATH.mem[6] = 32'h0000_0000; // RD6 초기값 0
 
         IMM       = 32'h0000_0010;
         JUMP_ADDR = (`RF_PATH.mem[1] + IMM) >> 2;

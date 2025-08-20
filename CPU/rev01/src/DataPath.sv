@@ -39,15 +39,13 @@ module DataPath (
         else if (branch & btaken) begin
             PCSrcMuxSel = 2'b01; 
         end
-        else if(instrCode[6:0] == 7'b1100111) begin
+        else if(instrCode[6:0] == `OP_TYPE_JALR) begin
             PCSrcMuxSel = 2'b10;
         end
         else begin
             PCSrcMuxSel = 2'b00;
         end
     end
-
-
 
     RegisterFile U_RegFile (
         .clk        (clk),
