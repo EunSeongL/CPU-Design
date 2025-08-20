@@ -12,7 +12,7 @@
 ## Bubble Sorting C Code, Assemblier 분석하기
 > Memory 공간에 Stack 영역의 변화과정과 변수의 Memory 할당 방식 이해
   배열, 포인터 동작 방식을 Memory 관점에서 분석하시오.
-  Memory 그림을 그리면서 분석, Register File의 Register 할당 ABIname을 보면서 할당 방식 이해
+  Memory 그림을 그리면서 분석, Register File의 Register 할당 **ABIname**을 보면서 할당 방식 이해하기.
   어셈블리어 명령 할당 하나하나 Memory와 RegFile 상호작용 내용을 글로 적으면서 분석하시오
 
 ## 정리
