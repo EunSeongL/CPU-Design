@@ -2,33 +2,42 @@
 `include "defines.sv"
 
 module DataPath (
+    // global signals
     input  logic        clk,
     input  logic        reset,
+    // instruction memory side port
     input  logic [31:0] instrCode,
     output logic [31:0] instrMemAddr,
+    // control unit side port
+    input  logic        PCEn,
     input  logic        regFileWe,
     input  logic [ 3:0] aluControl,
     input  logic        aluSrcMuxSel,
-    output logic [31:0] busAddr,
-    output logic [31:0] busWData,
-    output logic [ 3:0] Byte_Enable,
-    input  logic [31:0] busRData,
     input  logic [ 2:0] RFWDSrcMuxSel,
     input  logic        branch,
     input  logic        jal,
-    input  logic        jalr
+    input  logic        jalr,
+    // data memory side port
+    output logic [31:0] busAddr,
+    output logic [31:0] busWData,
+    input  logic [31:0] busRData,
+    output logic [ 3:0] Byte_Enable
 );
-
-    logic [31:0] aluResult, RFData1, RFData2, BE_RData, BE_WData;
-    logic [31:0] PCSrcData, PCOutData;
-    logic [31:0] aluSrcMuxOut, immExt, RFWDSrcMuxOut;
-    logic [31:0] PC_4_AdderResult, PC_Imm_AdderResult, PCSrcMuxOut, PC_Imm_AdderSrcMuxOut;
+    logic [31:0] aluResult, ExeReg_aluResult;
+    logic [31:0]
+        RFData1, RFData2, DecReg_RFData1, DecReg_RFData2, ExeReg_RFData2;
+    logic [31:0] PCSrcData, PCOutData, PC_Imm_AdderSrcMuxOut;
+    logic [31:0] aluSrcMuxOut, immExt, DecReg_immExt, RFWDSrcMuxOut;
+    logic [31:0]
+        PC_4_AdderResult, PC_Imm_AdderResult, PCSrcMuxOut, ExeReg_PCSrcMuxOut;
+    logic [31:0] MemAccReg_busData;
     logic PCSrcMuxSel;
     logic btaken;
+    logic [31:0] BE_RData, BE_WData;
 
     assign instrMemAddr = PCOutData;
-    assign busAddr = aluResult;
-    assign busWData = BE_WData;
+    assign busAddr = ExeReg_aluResult;
+    assign busWData = ExeReg_RFData2;
 
     RegisterFile U_RegFile (
         .clk(clk),
@@ -41,18 +50,56 @@ module DataPath (
         .RD2(RFData2)
     );
 
+    register U_DecReg_RFRD1 (
+        .clk  (clk),
+        .reset(reset),
+        .d    (RFData1),
+        .q    (DecReg_RFData1)
+    );
+
+    register U_DecReg_RFRD2 (
+        .clk  (clk),
+        .reset(reset),
+        .d    (RFData2),
+        .q    (DecReg_RFData2)
+    );
+
+    register U_ExeReg_RFRD2 (
+        .clk  (clk),
+        .reset(reset),
+        .d    (BE_WData),
+        .q    (ExeReg_RFData2)
+    );
+
     mux_2x1 U_AluSrcMux (
         .sel(aluSrcMuxSel),
-        .x0 (RFData2),
-        .x1 (immExt),
+        .x0 (DecReg_RFData2),
+        .x1 (DecReg_immExt),
         .y  (aluSrcMuxOut)
+    );
+
+    register U_MemAccReg_ReadData (
+        .clk  (clk),
+        .reset(reset),
+        .d    (busRData),
+        .q    (MemAccReg_busData)
+    );
+
+    Byte_Enable U_Byte_Enable (
+        .funct3     (instrCode[14:12]),
+        .RData      (MemAccReg_busData),
+        .WData      (DecReg_RFData2),
+        .addr       (aluResult[1:0]),
+        .Byte_Enable(Byte_Enable),
+        .BE_RData   (BE_RData),
+        .BE_WData   (BE_WData)
     );
 
     mux_5x1 U_RFWDSrcMux (
         .sel(RFWDSrcMuxSel),
         .x0 (aluResult),
         .x1 (BE_RData),
-        .x2 (immExt),
+        .x2 (DecReg_immExt),
         .x3 (PC_Imm_AdderResult),
         .x4 (PC_4_AdderResult),
         .y  (RFWDSrcMuxOut)
@@ -60,20 +107,17 @@ module DataPath (
 
     alu U_ALU (
         .aluControl(aluControl),
-        .a         (RFData1),
+        .a         (DecReg_RFData1),
         .b         (aluSrcMuxOut),
         .result    (aluResult),
         .btaken    (btaken)
     );
 
-    Byte_Enable U_Byte_Enable (
-        .funct3     (instrCode[14:12]),
-        .RData      (busRData),
-        .WData      (RFData2),
-        .addr       (aluResult[1:0]),
-        .Byte_Enable(Byte_Enable),
-        .BE_RData   (BE_RData),
-        .BE_WData   (BE_WData)
+    register U_ExeReg_ALU (
+        .clk  (clk),
+        .reset(reset),
+        .d    (aluResult),
+        .q    (ExeReg_aluResult)
     );
 
     immExtend U_ImmExtend (
@@ -81,15 +125,22 @@ module DataPath (
         .immExt   (immExt)
     );
 
+    register U_DecReg_ImmExtend (
+        .clk  (clk),
+        .reset(reset),
+        .d    (immExt),
+        .q    (DecReg_immExt)
+    );
+
     mux_2x1 U_PC_Imm_AdderSrcMux (
         .sel(jalr),
         .x0 (PCOutData),
-        .x1 (RFData1),
+        .x1 (DecReg_RFData1),
         .y  (PC_Imm_AdderSrcMuxOut)
     );
 
     adder U_PC_Imm_Adder (
-        .a(immExt),
+        .a(DecReg_immExt),
         .b(PC_Imm_AdderSrcMuxOut),
         .y(PC_Imm_AdderResult)
     );
@@ -100,7 +151,7 @@ module DataPath (
         .y(PC_4_AdderResult)
     );
 
-    assign PCSrcMuxSel = (btaken & branch) | jal;
+    assign PCSrcMuxSel = jal | (btaken & branch);
 
     mux_2x1 U_PCSrcMux (
         .sel(PCSrcMuxSel),
@@ -109,12 +160,18 @@ module DataPath (
         .y  (PCSrcMuxOut)
     );
 
-
-    register U_PC (
+    register U_ExeReg_PCSrcMux (
         .clk  (clk),
         .reset(reset),
-        .en   (1'b1),
         .d    (PCSrcMuxOut),
+        .q    (ExeReg_PCSrcMuxOut)
+    );
+
+    registerEn U_PC (
+        .clk  (clk),
+        .reset(reset),
+        .en   (PCEn),
+        .d    (ExeReg_PCSrcMuxOut),
         .q    (PCOutData)
     );
 
@@ -169,11 +226,13 @@ module RegisterFile (
 );
     logic [31:0] mem[0:2**5-1];
 
-    //initial begin  // for simulation test
-    //    for (int i = 0; i < 32; i++) begin
-    //        mem[i] = 10 + i;
-    //    end
-    //end
+    
+    initial begin  // for simulation test
+        for (int i = 0; i < 32; i++) begin
+            mem[i] = 10 + i;
+        end
+    end
+    
 
     always_ff @(posedge clk) begin
         if (we) mem[WA] <= WD;
@@ -183,7 +242,7 @@ module RegisterFile (
     assign RD2 = (RA2 != 0) ? mem[RA2] : 32'b0;
 endmodule
 
-module register (
+module registerEn (
     input  logic        clk,
     input  logic        reset,
     input  logic        en,
@@ -195,6 +254,21 @@ module register (
             q <= 0;
         end else begin
             if (en) q <= d;
+        end
+    end
+endmodule
+
+module register (
+    input  logic        clk,
+    input  logic        reset,
+    input  logic [31:0] d,
+    output logic [31:0] q
+);
+    always_ff @(posedge clk, posedge reset) begin
+        if (reset) begin
+            q <= 0;
+        end else begin
+            q <= d;
         end
     end
 endmodule
@@ -277,7 +351,8 @@ module immExtend (
             };
             `OP_TYPE_LU: immExt = {instrCode[31:12], 12'b0};
             `OP_TYPE_AU: immExt = {instrCode[31:12], 12'b0};
-            `OP_TYPE_J : immExt = {
+            `OP_TYPE_J:
+            immExt = {
                 {12{instrCode[31]}},
                 instrCode[19:12],
                 instrCode[20],
