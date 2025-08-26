@@ -53,8 +53,10 @@ CPU의 모든 동작을 제어하는 Control Unit은 명령어의 종류에 따�
 
 #### 명령어별 데이터 경로
 
-| **R-Type** | **I-Type** |
+| **DataPath** | **BType** |
 | :------------------------------------------------------: | :-------------------------------------------------------: |
+| ![DataPath](img/DataPath.png) | ![BType](img/BType.png) |
+| **R-Type** | **I-Type** |
 | ![RType](img/RType.png) | ![IType](img/IType.png) | 
 | **L-Type** | **S-Type** |
 | ![LType](img/LType.png) | ![SType](img/SType.png) |
@@ -62,8 +64,7 @@ CPU의 모든 동작을 제어하는 Control Unit은 명령어의 종류에 따�
 | ![JType](img/JType.png) | ![JLType](img/JLType.png) |
 | **LU-Type** | **AU-Type** |
 | ![LUType](img/LUType.png) | ![AUType](img/AUType.png) |
-| **BType** |
-| ![BType](img/BType.png) |
+
 ---
 
 ### 🔬 검증 및 시뮬레이션
