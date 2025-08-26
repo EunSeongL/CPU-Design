@@ -53,21 +53,46 @@ CPU의 모든 동작을 제어하는 Control Unit은 명령어의 종류에 따�
 
 #### 명령어별 데이터 경로
 
-| **R-Type** | **I-Type** |
-| :------------------------------------------------------: | :-------------------------------------------------------: |
-| ![RType](img/RType.png) | ![IType](img/IType.png) | 
-| **L-Type** | **S-Type** |
-| ![LType](img/LType.png) | ![SType](img/SType.png) |
-| **J-Type** | **JL-Type** |
-| ![JType](img/JType.png) | ![JLType](img/JLType.png) |
-| **LU-Type** | **AU-Type** |
-| ![LUType](img/LUType.png) | ![AUType](img/AUType.png) |
-<tr>
-    <td colspan="2" align="center"><b>B-Type</b></td>
-</tr>
-<tr>
+<table>
+  <tr>
+    <th>R-Type</th>
+    <th>I-Type</th>
+  </tr>
+  <tr>
+    <td><img src="img/RType.png" /></td>
+    <td><img src="img/IType.png" /></td>
+  </tr>
+  <tr>
+    <th>L-Type</th>
+    <th>S-Type</th>
+  </tr>
+  <tr>
+    <td><img src="img/LType.png" /></td>
+    <td><img src="img/SType.png" /></td>
+  </tr>
+  <tr>
+    <th>J-Type</th>
+    <th>JL-Type</th>
+  </tr>
+  <tr>
+    <td><img src="img/JType.png" /></td>
+    <td><img src="img/JLType.png" /></td>
+  </tr>
+  <tr>
+    <th>LU-Type</th>
+    <th>AU-Type</th>
+  </tr>
+  <tr>
+    <td><img src="img/LUType.png" /></td>
+    <td><img src="img/AUType.png" /></td>
+  </tr>
+  <tr>
+    <th colspan="2">B-Type</th>
+  </tr>
+  <tr>
     <td colspan="2" align="center"><img src="img/BType.png" /></td>
-</tr>
+  </tr>
+</table>
 
 ---
 
