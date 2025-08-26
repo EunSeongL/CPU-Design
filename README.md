@@ -60,9 +60,9 @@ CPU의 모든 동작을 제어하는 Control Unit은 명령어의 종류에 따�
 | ![RType](img/RType.png) | ![IType](img/IType.png) | 
 | **L-Type** | **S-Type** |
 | ![LType](img/LType.png) | ![SType](img/SType.png) |
-| **J-Type** | **JL-Type** |
+| **J-Type(JAL)** | **JL-Type(JALR)** |
 | ![JType](img/JType.png) | ![JLType](img/JLType.png) |
-| **LU-Type** | **AU-Type** |
+| **U-Type(LU)** | **U-Type(AU)** |
 | ![LUType](img/LUType.png) | ![AUType](img/AUType.png) |
 
 ---
