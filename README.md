@@ -45,7 +45,7 @@ CPU-Design/
 
 ### 🏗️ CPU 아키텍처
 
-#### Control Unit 상태도
+#### ControlUnit 상태도
 
 CPU의 모든 동작을 제어하는 Control Unit은 명령어의 종류에 따라 상태를 전환하며 데이터 경로를 제어합니다. 명령어 Fetch 및 Decode 후, 각 명령어 타입에 맞는 Execute 상태로 분기합니다.
 
