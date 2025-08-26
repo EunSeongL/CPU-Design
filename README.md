@@ -1,6 +1,6 @@
 # 📌 RISC-V RV32I CPU 설계 프로젝트
 
-## 📜 목차 (Table of Contents)
+### 📜 목차 (Table of Contents)
 
 1.  [**프로젝트 개요**](#-프로젝트-개요)
 2.  [**개발 환경**](#-개발-환경)
