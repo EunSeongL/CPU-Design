@@ -35,7 +35,7 @@ CPU-Design/
 ├── rtl/            # SystemVerilog RTL 코드
 │   ├── single/     # Single-Cycle CPU
 │   ├── multi/      # Multi-Cycle CPU
-│   └── common/     # 공용 모듈(ALU, Register File 등)
+│   └── dev/        # 개발 과정 기록 버전
 ├── tb/             # Testbench 코드
 ├── sim/            # 시뮬레이션 스크립트 및 결과
 └── README.md
