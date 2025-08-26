@@ -62,9 +62,15 @@ CPU의 모든 동작을 제어하는 Control Unit은 명령어의 종류에 따�
 | ![JType](img/JType.png) | ![JLType](img/JLType.png) |
 | **LU-Type** | **AU-Type** |
 | ![LUType](img/LUType.png) | ![AUType](img/AUType.png) |
-| **BType** |
-| ![BType](img/BType.png) |
+<tr>
+    <td colspan="2" align="center"><b>B-Type</b></td>
+</tr>
+<tr>
+    <td colspan="2" align="center"><img src="img/BType.png" /></td>
+</tr>
+
 ---
+
 
 ### 🔬 검증 및 시뮬레이션
 
