@@ -65,8 +65,8 @@ CPU의 모든 동작을 제어하는 Control Unit은 명령어의 종류에 따�
 | **U-Type(LU)** | **U-Type(AU)** |
 | ![LUType](img/LUType.png) | ![AUType](img/AUType.png) |
 
-📂 [Single Cycle RTL CODE](./CPU/single_cycle)<br>
-📂 [Multi Cycle RTL CODE](./CPU/multi_cycle)
+📂 [Single Cycle](./CPU/single_cycle/src)<br>
+📂 [Multi Cycle](./CPU/multi_cycle/src/)
 
 ---
 
@@ -77,6 +77,8 @@ CPU의 모든 동작을 제어하는 Control Unit은 명령어의 종류에 따�
 * **Task 기반 검증**: `reset_cpu`, `check_result_RF`, `check_result_DMEM` 등 반복적인 작업을 Task로 모듈화하여 테스트 효율을 높였습니다
 * **매크로 경로 설정**: `define`을 사용하여 주요 모듈의 계층적 경로를 상수로 정의하여 코드의 가독성과 유지보수성을 향상시켰습니다.
 * **Timeout 기능**: 지정된 시간 내에 테스트가 완료되지 않으면 시뮬레이션을 자동으로 종료시키는 로직을 추가하여 무한 루프 등의 오류를 방지했습니다.
+
+📂 [TestBench](./CPU/multi_cycle/testbench)
 
 ---
 
