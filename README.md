@@ -23,7 +23,7 @@ RISC-V 명령어 세트 아키텍처(ISA)를 기반으로 구현한 32비트 CPU
 ## 💻 개발 환경
 
 - **EDA**: Xilinx **Vivado HLx Editions**
-- **언어 (Language)**: **Verilog HDL**
+- **Language**: **System Verilog**
 - **IDE**: **Visual Studio Code**
 
 ---
