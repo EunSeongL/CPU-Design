@@ -36,7 +36,7 @@ CPU-Design/
 │   ├── single/     # Single-Cycle CPU
 │   ├── multi/      # Multi-Cycle CPU
 │   └── dev/        # 개발 과정 기록 버전
-├── tb/             # Testbench 코드
+├── testbench/      # Testbench 코드
 ├── sim/            # 시뮬레이션 스크립트 및 결과
 └── README.md
 ```
