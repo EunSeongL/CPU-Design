@@ -67,8 +67,8 @@ CPU의 모든 동작을 제어하는 Control Unit은 명령어의 종류에 따�
 
 ---
 
-[📂 Single Cycle RTL CODE](./CPU/single_cycle)<br>
-[📂 Multi Cycle RTL CODE](./CPU/multi_cycle)
+📂 [Single Cycle RTL CODE](./CPU/single_cycle)<br>
+📂 [Multi Cycle RTL CODE](./CPU/multi_cycle)
 
 ### 🔬 검증 및 시뮬레이션
 
