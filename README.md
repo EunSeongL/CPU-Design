@@ -32,7 +32,7 @@ RISC-V 명령어 세트 아키텍처(ISA)를 기반으로 구현한 32비트 CPU
 ```
 CPU-Design/
 ├── docs/           # 설계 보고서, 참고 자료
-├── rtl/            # Verilog/SystemVerilog RTL 코드
+├── rtl/            # SystemVerilog RTL 코드
 │   ├── single/     # Single-Cycle CPU
 │   ├── multi/      # Multi-Cycle CPU
 │   └── common/     # 공용 모듈(ALU, Register File 등)
@@ -49,13 +49,13 @@ CPU-Design/
 
 CPU의 모든 동작을 제어하는 Control Unit은 명령어의 종류에 따라 상태를 전환하며 데이터 경로를 제어합니다. 명령어 Fetch 및 Decode 후, 각 명령어 타입에 맞는 Execute 상태로 분기합니다.
 
-[여기에 Control Unit 상태도 이미지를 삽입하세요 (PDF 6페이지)]
+![alt text](img/CUstate.png)
 
 #### 명령어별 데이터 경로
 
 | **R-Type** | **I-Type** | **L-Type** |
 | :------------------------------------------------------: | :-------------------------------------------------------: | :-------------------------------------------------------: |
-| [R-Type 블록 다이어그램 이미지 (PDF 7페이지)] | [I-Type 블록 다이어그램 이미지 (PDF 16페이지)] | [L-Type 블록 다이어그램 이미지 (PDF 10페이지)] |
+| ![RType](img/RType.png) | [I-Type 블록 다이어그램 이미지 (PDF 16페이지)] | [L-Type 블록 다이어그램 이미지 (PDF 10페이지)] |
 | **S-Type** | **B-Type** | **J-Type** |
 | [S-Type 블록 다이어그램 이미지 (PDF 13페이지)] | [B-Type 블록 다이어그램 이미지 (PDF 19페이지)] | [J-Type 블록 다이어그램 이미지 (PDF 26페이지)] |
 
