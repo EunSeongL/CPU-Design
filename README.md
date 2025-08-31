@@ -102,11 +102,7 @@ CPU의 모든 동작을 제어하는 Control Unit은 명령어의 종류에 따�
 
 ### 컴파일 환경
 -   **Toolchain**: RISC-V GNU Compiler Toolchain
--   **Commands**:
-    ```bash
-    riscv64-unknown-elf-gcc -o test.o -c test.c -march=rv32i
-    riscv64-unknown-elf-objcopy -O binary test.o test.bin
-    ```
+
 ---
 
 ### 🛠️ 문제 해결 과정
@@ -131,4 +127,5 @@ CPU의 모든 동작을 제어하는 Control Unit은 명령어의 종류에 따�
 ```
 Pipeline CPU 설계
 Hazard 제어 (Forwarding, Stall, Branch Prediction)
+
 ```
