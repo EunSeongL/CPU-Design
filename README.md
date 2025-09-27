@@ -16,7 +16,7 @@
 
 ### 🎯 프로젝트 개요
 
-RISC-V 명령어 세트 아키텍처(ISA)를 기반으로 구현한 32비트 CPU 설계 프로젝트입니다. CPU의 핵심 구성 요소인 **데이터 경로(DataPath)**와 **제어 유닛(Control Unit)**을 System Verilog를 사용하여 설계하고 Vivado tool을 활용하여 RTL 코드를 합성하고 시뮬레이션을 통해 모든 명령어 타입의 동작을 검증하고자 했습니다. 추가적으로 C언어로 작성된 코드를 RISC-V 기계어로 변환하여 실행함으로써, 소프트웨어와 하드웨어 간의 동작방식을 이해하고, 실제 프로그램이 하드웨어에서 실행되는 전 과정을 파악하고자 했습니다.
+RISC-V 명령어 세트 아키텍처(ISA)를 기반으로 구현한 32비트 CPU 설계 프로젝트입니다. CPU의 핵심 구성 요소인 **DataPath**와 **Control Unit**을 SystemVerilog를 기반으로 설계하고 **Vivado EDA tool**을 활용하여 RTL 코드를 합성하고 시뮬레이션을 통해 모든 명령어 타입의 동작을 검증하고자 했습니다. 추가적으로 C언어로 작성된 코드를 RISC-V 기계어로 변환하여 ROM에 넣어 동작을 확인하면서, 소프트웨어와 하드웨어 간의 동작방식을 이해하고자 하였습니다.
 
 ---
 
@@ -211,3 +211,4 @@ Pipeline CPU 설계
 Hazard 제어 (Forwarding, Stall, Branch Prediction)
 
 ```
+
